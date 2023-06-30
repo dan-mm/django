@@ -23,6 +23,8 @@ jobs:
   docs:
     # OS must be the same as on djangoproject.com.
     runs-on: ubuntu-20.04
+    permissions:
+      pull-requests: write
     name: docs
     steps:
       - name: Eco-CI Init
@@ -57,6 +59,8 @@ jobs:
 
   blacken-docs:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     name: blacken-docs
     steps:
       - name: Eco-CI Init
