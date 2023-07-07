@@ -1,9 +1,9 @@
 name: Tests
 
 on:
-  pull_request:
-    paths-ignore:
-      - 'docs/**'
+  # pull_request:
+  #   paths-ignore:
+  #     - 'docs/**'
   push:
     branches:
       - main
