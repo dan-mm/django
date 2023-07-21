@@ -27,8 +27,8 @@ jobs:
           CHANGES=$(git rev-list HEAD..upstream/main --count)
           if [ "$CHANGES" -gt 0 ]; then
             echo "Updating fork..."
-            git pull upstream main
             git config pull.rebase true
+            git pull upstream main
             git push origin main
           else
             echo "No updates from the original repository."
