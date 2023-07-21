@@ -61,7 +61,9 @@ For example, the template below:
     <div>
       {{ form.name.label_tag }}
       {% if form.name.help_text %}
-        <div class="helptext">{{ form.name.help_text|safe }}</div>
+        <div class="helptext" id="{{ form.name.id_for_label }}_helptext">
+          {{ form.name.help_text|safe }}
+        </div>
       {% endif %}
       {{ form.name.errors }}
       {{ form.name }}
@@ -69,7 +71,9 @@ For example, the template below:
         <div class="col">
           {{ form.email.label_tag }}
           {% if form.email.help_text %}
-            <div class="helptext">{{ form.email.help_text|safe }}</div>
+            <div class="helptext" id="{{ form.email.id_for_label }}_helptext">
+              {{ form.email.help_text|safe }}
+            </div>
           {% endif %}
           {{ form.email.errors }}
           {{ form.email }}
@@ -77,7 +81,9 @@ For example, the template below:
         <div class="col">
           {{ form.password.label_tag }}
           {% if form.password.help_text %}
-            <div class="helptext">{{ form.password.help_text|safe }}</div>
+            <div class="helptext" id="{{ form.password.id_for_label }}_helptext">
+              {{ form.password.help_text|safe }}
+            </div>
           {% endif %}
           {{ form.password.errors }}
           {{ form.password }}
@@ -139,6 +145,9 @@ Minor features
 
 * ``XRegExp`` is upgraded from version 3.2.0 to 5.1.1.
 
+* The new :meth:`.AdminSite.get_model_admin` method returns an admin class for
+  the given model class.
+
 :mod:`django.contrib.admindocs`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -149,6 +158,12 @@ Minor features
 
 * The default iteration count for the PBKDF2 password hasher is increased from
   600,000 to 720,000.
+
+* The new asynchronous functions are now provided, using an
+  ``a`` prefix: :func:`django.contrib.auth.aauthenticate`,
+  :func:`~.django.contrib.auth.aget_user`,
+  :func:`~.django.contrib.auth.alogin`, :func:`~.django.contrib.auth.alogout`,
+  and :func:`~.django.contrib.auth.aupdate_session_auth_hash`.
 
 * ``AuthenticationMiddleware`` now adds an :meth:`.HttpRequest.auser`
   asynchronous method that returns the currently logged-in user.
@@ -172,6 +187,8 @@ Minor features
 
 * :ref:`GIS aggregates <gis-aggregation-functions>` now support the ``filter``
   argument.
+
+* Added support for GDAL 3.7.
 
 :mod:`django.contrib.messages`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -241,6 +258,18 @@ Decorators
   * :func:`~django.views.decorators.cache.cache_control`
   * :func:`~django.views.decorators.cache.never_cache`
   * :func:`~django.views.decorators.common.no_append_slash`
+  * :func:`~django.views.decorators.csrf.csrf_exempt`
+  * :func:`~django.views.decorators.debug.sensitive_variables`
+  * :func:`~django.views.decorators.debug.sensitive_post_parameters`
+  * :func:`~django.views.decorators.http.condition`
+  * :func:`~django.views.decorators.http.etag`
+  * :func:`~django.views.decorators.http.last_modified`
+  * :func:`~django.views.decorators.http.require_http_methods`
+  * :func:`~django.views.decorators.http.require_GET`
+  * :func:`~django.views.decorators.http.require_POST`
+  * :func:`~django.views.decorators.http.require_safe`
+  * :func:`~django.views.decorators.vary.vary_on_cookie`
+  * :func:`~django.views.decorators.vary.vary_on_headers`
   * ``xframe_options_deny()``
   * ``xframe_options_sameorigin()``
   * ``xframe_options_exempt()``
@@ -253,7 +282,9 @@ Email
 Error Reporting
 ~~~~~~~~~~~~~~~
 
-* ...
+* :func:`~django.views.decorators.debug.sensitive_variables` and
+  :func:`~django.views.decorators.debug.sensitive_post_parameters` can now be
+  used with asynchronous functions.
 
 File Storage
 ~~~~~~~~~~~~
@@ -274,6 +305,10 @@ Forms
 
 * The new ``assume_scheme`` argument for :class:`~django.forms.URLField` allows
   specifying a default URL scheme.
+
+* In order to improve accessibility and enable screen readers to associate form
+  fields with their help text, the form field now includes the
+  ``aria-describedby`` HTML attribute.
 
 Generic Views
 ~~~~~~~~~~~~~
@@ -318,6 +353,17 @@ Models
   :ref:`Choices classes <field-choices-enum-types>` directly instead of
   requiring expansion with the ``choices`` attribute.
 
+* The :ref:`force_insert <ref-models-force-insert>` argument of
+  :meth:`.Model.save` now allows specifying a tuple of parent classes that must
+  be forced to be inserted.
+
+* :meth:`.QuerySet.bulk_create` and :meth:`.QuerySet.abulk_create` methods now
+  set the primary key on each model instance when the ``update_conflicts``
+  parameter is enabled (if the database supports it).
+
+* The new :attr:`.UniqueConstraint.nulls_distinct` attribute allows customizing
+  the treatment of ``NULL`` values on PostgreSQL 15+.
+
 Pagination
 ~~~~~~~~~~
 
@@ -355,7 +401,11 @@ Templates
 Tests
 ~~~~~
 
-* ...
+* :class:`~django.test.Client` and :class:`~django.test.AsyncClient` now
+  provide asynchronous methods, using an ``a`` prefix:
+  :meth:`~django.test.Client.asession`, :meth:`~django.test.Client.alogin`,
+  :meth:`~django.test.Client.aforce_login`, and
+  :meth:`~django.test.Client.alogout`.
 
 URLs
 ~~~~
@@ -396,6 +446,22 @@ backends.
   ``False`` if the database doesn't support the ``DEFAULT`` keyword in bulk
   ``INSERT`` queries.
 
+:mod:`django.contrib.gis`
+-------------------------
+
+* Support for GDAL 2.2 and 2.3 is removed.
+
+* Support for GEOS 3.6 and 3.7 is removed.
+
+:mod:`django.contrib.sitemaps`
+------------------------------
+
+* The ``django.contrib.sitemaps.ping_google()`` function and the
+  ``ping_google`` management command are removed as the Google
+  Sitemaps ping endpoint is deprecated and will be removed in January 2024.
+
+* The ``django.contrib.sitemaps.SitemapNotFound`` exception class is removed.
+
 Using ``create_defaults__exact`` may now be required with ``QuerySet.update_or_create()``
 -----------------------------------------------------------------------------------------
 
@@ -433,6 +499,15 @@ Miscellaneous
   the exclusive or (``XOR``) operator now returns rows that are matched by an
   odd number of operands rather than exactly one operand. This is consistent
   with the behavior of MySQL, MariaDB, and Python.
+
+* The minimum supported version of ``asgiref`` is increased from 3.6.0 to
+  3.7.0.
+
+* The minimum supported version of ``selenium`` is increased from 3.8.0 to
+  4.8.0.
+
+* The ``AlreadyRegistered`` and ``NotRegistered`` exceptions are moved from
+  ``django.contrib.admin.sites`` to ``django.contrib.admin.exceptions``.
 
 .. _deprecated-features-5.0:
 

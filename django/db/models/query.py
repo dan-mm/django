@@ -1135,8 +1135,8 @@ class QuerySet(AltersData):
         self._not_support_combined_queries("delete")
         if self.query.is_sliced:
             raise TypeError("Cannot use 'limit' or 'offset' with delete().")
-        if self.query.distinct or self.query.distinct_fields:
-            raise TypeError("Cannot call delete() after .distinct().")
+        if self.query.distinct_fields:
+            raise TypeError("Cannot call delete() after .distinct(*fields).")
         if self._fields is not None:
             raise TypeError("Cannot call delete() after .values() or .values_list()")
 
@@ -1837,12 +1837,17 @@ class QuerySet(AltersData):
         inserted_rows = []
         bulk_return = connection.features.can_return_rows_from_bulk_insert
         for item in [objs[i : i + batch_size] for i in range(0, len(objs), batch_size)]:
-            if bulk_return and on_conflict is None:
+            if bulk_return and (
+                on_conflict is None or on_conflict == OnConflict.UPDATE
+            ):
                 inserted_rows.extend(
                     self._insert(
                         item,
                         fields=fields,
                         using=self.db,
+                        on_conflict=on_conflict,
+                        update_fields=update_fields,
+                        unique_fields=unique_fields,
                         returning_fields=self.model._meta.db_returning_fields,
                     )
                 )
