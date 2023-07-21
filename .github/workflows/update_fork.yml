@@ -1,0 +1,30 @@
+name: Sync Fork with Upstream
+on:
+  # schedule:
+  #   - cron: "0 0 * * *"
+  workflow_dispatch:
+
+
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Add remote repository
+        run: |
+          git remote add upstream https://github.com/django/django
+          git fetch upstream
+
+      - name: Check for updates
+        run: |
+          CHANGES=$(git rev-list HEAD..upstream/main --count)
+          if [ "$CHANGES" -gt 0 ]; then
+            echo "Updating fork..."
+            git pull upstream main
+            git push origin main
+          else
+            echo "No updates from the original repository."
+          fi
